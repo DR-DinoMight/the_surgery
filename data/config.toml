@@ -1,0 +1,13 @@
+[chatColours]
+0 = [255, 113, 123]
+1 = [224, 228, 19]
+2 = [185, 156, 69]
+3 = [11, 244, 244]
+4 = [22, 168, 247]
+5 = [154, 146, 255]
+6 = [255, 83, 255]
+
+[stream]
+url = "https://stream.deloughry.co.uk"
+emojiWidth = 20
+emojiHeight = 20

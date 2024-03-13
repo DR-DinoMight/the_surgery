@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Messages</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+						font-family: "VictorMono Nerd Font", monospace;
+						color: white;
+        }
+
+        #chat-container {
+            height: 100%;
+            overflow-y: hidden;
+            padding-bottom: 1rem;
+            display: flex;
+            flex-direction: column-reverse;
+						width: 100%;
+
+        }
+
+				.emoji {
+					height: 24px;
+					aspect-ratio: 1/1;
+				}
+
+				li {
+					display: flex;
+					justify-items: flex-start;
+					padding: .5rem;
+				}
+
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-[#122738]">
+    <div class="container px-4 py-4 h-full max-h-[100vh] max-w-[100vw]">
+        <div id="chat-container" class="bg-[#021b2d] p-4 rounded shadow">
+            <ul id="chat-list" class="space-y-2">
+                <!-- Chat messages will be dynamically added here -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+
+        // Function to handle incoming SSE messages
+        function handleMessage(event) {
+						console.log(event);
+            var message = JSON.parse(event.data);
+            var chatList = document.getElementById('chat-list');
+            var chatContainer = document.getElementById('chat-container');
+            var listItem = document.createElement('li');
+            listItem.classList.add('text-sm', 'fade-in-up');
+
+
+
+            var formattedMessage = '<time class="pr-2">'+ message.timestamp+'</time>' + message.sender + ': ' + message.message;
+            listItem.innerHTML = formattedMessage;
+            listItem.dataset.created = message['created_at'];
+            chatList.appendChild(listItem);
+
+            // Remove old messages that are off the screen
+            var chatContainerRect = chatContainer.getBoundingClientRect();
+            var listItems = chatList.children;
+            for (var i = 0; i < listItems.length; i++) {
+                var listItemRect = listItems[i].getBoundingClientRect();
+                if (listItemRect.bottom < chatContainerRect.top) {
+                    chatList.removeChild(listItems[i]);
+								} else {
+									break;
+								}
+						}
+						// Scroll to the bottom of the chat container
+						chatContainer.scrollTop = chatContainer.scrollHeight;
+					}
+
+					// Connect to the SSE endpoint
+					function connectEventSource() {
+							var eventSource = new EventSource('/messages');
+							eventSource.addEventListener('msg', (event) => {
+								handleMessage(event);
+								var chatContainer = document.getElementById('chat-container');
+								chatContainer.scrollTop = chatContainer.scrollHeight;
+							})
+							eventSource.addEventListener('actionMessage', (event) => {
+								//clear chat list
+								var chatList = document.getElementById('chat-list');
+								chatList.innerHTML = "";
+								console.log('Reconnected!');
+							})
+					}
+
+					connectEventSource();
+			</script>
+		</body>
